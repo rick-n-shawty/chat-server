@@ -2,7 +2,7 @@ const Room = require('../DB/models/Room')
 
 const createChatRoom = async (req, res, next) => {
     try{
-
+        const room = await Room.create({name,})
     }catch(err){
     }
 }

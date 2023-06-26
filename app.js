@@ -14,11 +14,9 @@ app.use(express.json())
 app.use(cors({ 
     origin: '*' 
 }))
-app.get('/', (req, res) => {
-    res.send("Hello world!")
-})
-
-
+app.get('/', (req, res) => res.send('Hello World!'))
+const AuthRouter = require('./Routes/User')
+app.use('/api/v1', AuthRouter)
 
 app.use(ErrorHandler)
 app.use(NotFound)

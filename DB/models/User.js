@@ -15,6 +15,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    friends: {
+        type: Array,
+        default: []
+    },
     chatRooms: {
         type: Array,
         default: []
@@ -25,7 +29,10 @@ UserSchema.pre('save', async function(){
     const salt = await bcrypt.genSalt()
     this.password = await bcrypt.hash(this.password, salt)
 })
-
+UserSchema.methods.CheckPassword = async function(password){
+    const isMatch = await bcrypt.compare(password, this.password)
+    return isMatch
+}
 const User = mongoose.model('users', UserSchema)
 
 
