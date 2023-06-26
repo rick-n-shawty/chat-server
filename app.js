@@ -21,7 +21,7 @@ io.on('connection', (socket) => {
         console.log(`message: ${msg}`)
         messages.push({id: socket.id, msg: msg})
         const data = JSON.stringify(messages)
-        socket.emit('message', data)
+        socket.broadcast.emit('message', data)
     })
 })
 
