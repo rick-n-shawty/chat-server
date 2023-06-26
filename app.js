@@ -7,8 +7,9 @@ const http = require('http')
 const server = http.createServer(app)
 const { Server } = require('socket.io')
 const io = new Server(server); 
+const messages = [] 
 app.use(express.json()) 
-app.use(cors({
+app.use(cors({ 
     origin: '*' 
 }))
 app.get('/', (req, res) => {
@@ -16,10 +17,11 @@ app.get('/', (req, res) => {
 })
 
 io.on('connection', (socket) => {
-    console.log('Connected')
     socket.on('message', (msg) => {
-        const randomNum = Math.floor(Math.random() * 13)
-        socket.emit('message', `Your number is ${randomNum}`)
+        console.log(`message: ${msg}`)
+        messages.push({id: socket.id, msg: msg})
+        const data = JSON.stringify(messages)
+        socket.emit('message', data)
     })
 })
 
