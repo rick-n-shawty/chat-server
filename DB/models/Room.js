@@ -6,10 +6,12 @@ const RoomSchema = new mongoose.Schema({
         unique: true
     },
     members: {
-        type: Array
-    }, 
-    messages: {
-        type: Array
+        type: Array,
+        require: true
+    },
+    createdBy: {
+        type: mongoose.Types.ObjectId,
+        require: true
     }
 })
 

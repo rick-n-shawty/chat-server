@@ -11,7 +11,7 @@ const authenticate = (req, res, next) => {
         if(!decoded) return res.status(StatusCodes.UNAUTHORIZED).json({err: "not authorized"})
         const {userId} = decoded 
         req.userId = userId
-        next()
+        return next()
     }catch(err){
         return res.status(StatusCodes.UNAUTHORIZED)
     }

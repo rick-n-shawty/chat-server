@@ -19,8 +19,15 @@ class BadRequest extends CustomError{
         this.statusCode = StatusCodes.BAD_REQUEST
     }
 }
+class Unauthorized extends CustomError{
+    constructor(message){
+        super(message)
+        this.statusCode = StatusCodes.UNAUTHORIZED
+    }
+}
 module.exports = {
     BadRequest,
     NotFound,
-    CustomError
+    CustomError,
+    Unauthorized
 }

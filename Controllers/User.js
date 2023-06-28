@@ -1,8 +1,9 @@
 const User = require('../DB/models/User')
 const joi = require('joi')
-const {BadRequest, NotFound} = require('../Errors/CustomErrors')
+const {BadRequest, NotFound, Unauthorized} = require('../Errors/CustomErrors')
 const { StatusCodes } = require('http-status-codes')
 const {createAccessToken, createRefreshToken} = require('../helperFunctions/jwt')
+const jwt = require('jsonwebtoken')
 const verifyRegisterBody = (body) =>{
     try{
         const joiSchema = joi.object({
@@ -58,7 +59,23 @@ const Login = async(req, res, next) => {
     }
 }
 
+const refreshToken = async (req, res, next) => {
+    try{
+        const headers = req.headers.authorization 
+        if(!headers || !headers.startsWith("Bearer")) throw new BadRequest("bad request")
+        const token = headers.split(' ')[1]
+        if(!token) throw new BadRequest("Token is missing")
+        const payload = jwt.verify(token, process.env.JWT_REFRESH_KEY)
+        if(!payload || !payload.userId) throw new Unauthorized("You are not authorized to get this resource")
+        const accessToken = createAccessToken(payload)
+        const refreshToken = createRefreshToken(payload)
+        return res.status(StatusCodes.OK).json({accessToken, refreshToken})
+    }catch(err){
+        return next(err)
+    }
+}
 module.exports = {
     Register,
-    Login
+    Login,
+    refreshToken
 }
