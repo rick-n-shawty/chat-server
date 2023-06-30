@@ -19,6 +19,7 @@ app.get('/', (req, res) => res.send('Hello World!'))
 const AuthRouter = require('./Routes/User')
 const RoomsRouter = require('./Routes/Rooms')
 const MessageRouter = require('./Routes/Messages')
+const jwt = require('jsonwebtoken')
 
 app.use('/api/v1', AuthRouter)
 app.use('/api/v1/rooms', authenticate, RoomsRouter)
@@ -29,8 +30,10 @@ app.use(NotFound)
 
 const Room = require('./DB/models/Room')
 const Message = require('./DB/models/Messages')
+const User = require('./DB/models/User')
 io.on('connection', (socket) => {
     socket.on('joinRoom', async (room) => {
+        console.log(room)
         socket.join(room)
         const roomRecord = await Room.findOne({name: room})
         const messages = await Message.find({roomId: roomRecord._id})
@@ -43,9 +46,15 @@ io.on('connection', (socket) => {
         socket.leave(room)
         console.log(`someone left the room ${room}`)
     })
-    socket.on('sendMessage', (room, message) => {
+    socket.on('sendMessage', async (room, message) => {
         // io.to(room).emit('message', message)
-        console.log(message) 
+        console.log(message, room) 
+        const {roomId, msg, accessToken} = message
+        const { userId } = jwt.verify(accessToken, process.env.JWT_ACCESS_KEY)
+        const user = await User.findById(userId)
+        const postedMessage = await Message.create({content: msg, roomId, senderId: userId, senderName: user.email})
+        const messages = await Message.find({roomId})
+        io.to(room).emit('message', messages)
     })
 })
 
