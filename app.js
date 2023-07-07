@@ -31,12 +31,13 @@ app.use(NotFound)
 const Room = require('./DB/models/Room')
 const Message = require('./DB/models/Messages')
 const User = require('./DB/models/User')
+const { search } = require('./Controllers/search')
 io.on('connection', (socket) => {
     socket.on('joinRoom', async (room) => {
         console.log(room)
         socket.join(room)
-        const roomRecord = await Room.findOne({name: room})
-        const messages = await Message.find({roomId: roomRecord._id})
+        const roomRecord = await Room.findOne({ name: room }) 
+        const messages = await Message.find({roomId: roomRecord._id}).sort({ createdAt: -1})
         const numberOfMembers = roomRecord.members.length  
         console.log(roomRecord)
         io.to(room).emit('message', messages)
@@ -53,8 +54,19 @@ io.on('connection', (socket) => {
         const { userId } = jwt.verify(accessToken, process.env.JWT_ACCESS_KEY)
         const user = await User.findById(userId)
         const postedMessage = await Message.create({content: msg, roomId, senderId: userId, senderName: user.email})
-        const messages = await Message.find({roomId})
-        io.to(room).emit('message', messages)
+        const messages = await Message.find({roomId}).sort({createdAt: -1})
+        io.to(room).emit('message', messages) 
+    })
+
+    socket.on('search', async (message) => {
+        const { content, accessToken } = message
+        if(!accessToken) {
+            // check what is gonna happen if there is no access token 
+            return 
+        }
+        const { userId } = jwt.verify(accessToken, process.env.JWT_ACCESS_KEY)
+        const users = await search(content, userId)
+        socket.emit('message', users)
     })
 })
 
