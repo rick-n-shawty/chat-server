@@ -19,6 +19,10 @@ const UserSchema = new mongoose.Schema({
         type: Array,
         default: []
     },
+    groups: {
+        type: Array,
+        default: []
+    },
     chatRooms: {
         type: Array,
         default: []
