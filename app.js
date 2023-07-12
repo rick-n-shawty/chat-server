@@ -30,7 +30,13 @@ app.use(ErrorHandler)
 app.use(NotFound)
 
 const { search } = require('./Controllers/search')
-const { joinRoom, sendMessage, deleteMessage, createChatRoom } = require('./SocketControllers')
+const { 
+    joinRoom, 
+    sendMessage, 
+    deleteMessage, 
+    createChatRoom,
+    joinGroup
+ } = require('./SocketControllers')
 io.on('connection', (socket) => {
     // PERSONAL CHATS  
     socket.on('createRoom', async (data) => {
@@ -69,14 +75,28 @@ io.on('connection', (socket) => {
     })
 
     // GROUP CHATS
-    socket.on('joinGroup', async (room) => {
-        socket.join(room)
+    socket.on('joinGroup', async (data) => {
+        try{
+            const { groupId } = data
+            const messages = await joinGroup(data)
+            if(!messages) return 
+            socket.join(groupId)
+            io.to(groupId).emit('message', messages)
+            console.log('Someone has joined the group...')
+        }catch(err){
+            console.log(err)
+        }
     })
-    socket.on('leaveGroup', async (room) => {
-        socket.leave()
+    socket.on('leaveGroup', async (groupId) => {
+        socket.leave(groupId)
     })
-    socket.on('sendGroupMessage', async(room, message) => {
-
+    socket.on('sendGroupMessage', async(chatId, data) => {
+        const message = await sendMessage(data)
+        if(!message){
+            io.to(socket.id).emit('Something went wrong, sorry...')
+            return
+        }
+        io.to(chatId).emit('message', message)
     })
 
 

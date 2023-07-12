@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const MessageSchema = new mongoose.Schema({
-    roomId: {
+    chatId: {
         type: mongoose.Types.ObjectId,
         require: true 
     },
